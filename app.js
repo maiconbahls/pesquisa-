@@ -258,9 +258,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return name;
         });
 
-        // Ajuste para escala logarítmica: valores 0 viram 0.5 para aparecerem levemente acima da base
-        const lgSet = sortedData.map(r => r.lg <= 0 ? 0.5 : r.lg);
-        const gptwSet = sortedData.map(r => r.gptw <= 0 ? 0.5 : r.gptw);
+        // Ajuste para escala: valores 0 ficam como 0 para não aparecerem colunas
+        const lgSet = sortedData.map(r => r.lg);
+        const gptwSet = sortedData.map(r => r.gptw);
         const gapSet = sortedData.map(r => r.gap);
 
         // Chart 1: Comparison + GAP Brackets (Principal)
@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         align: 'top',
                         offset: 2,
                         color: 'var(--primary)',
-                        formatter: (v) => v < 1 ? '0' : Math.round(v).toLocaleString(),
+                        formatter: (v) => (v === null || v < 1) ? '' : Math.round(v).toLocaleString(),
                         font: { family: 'Outfit', weight: '900', size: 13 }
                     }
                 },
@@ -318,8 +318,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     y: {
                         type: 'logarithmic',
                         display: false,
-                        min: 0.1, // Começa abaixo de 1 para dar "vão" na base
-                        suggestedMax: Math.max(...lgSet, ...gptwSet) * 2
+                        min: 0, // Permite que o zero seja o limite inferior real
+                        suggestedMax: Math.max(...lgSet, ...gptwSet) * 1.5
                     }
                 }
             }
