@@ -216,8 +216,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const x1 = bar.x;
                 const x2 = gptwMeta.data[i].x;
-                // Sobe a linha do GAP para dar espaço aos números no topo
-                const y = Math.min(bar.y, gptwMeta.data[i].y) - 28;
+                // Coloca a linha do GAP mais próxima, já que os números agora estão no meio da barra
+                const y = Math.min(bar.y, gptwMeta.data[i].y) - 15;
 
                 // Draw black connector line
                 ctx.beginPath();
@@ -258,9 +258,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return name;
         });
 
-        // Ajuste para escala logarítmica: valores 0 viram 1 para aparecerem na base
-        const lgSet = sortedData.map(r => r.lg <= 0 ? 1 : r.lg);
-        const gptwSet = sortedData.map(r => r.gptw <= 0 ? 1 : r.gptw);
+        // Ajuste para escala logarítmica: valores 0 viram 0.5 para aparecerem levemente acima da base
+        const lgSet = sortedData.map(r => r.lg <= 0 ? 0.5 : r.lg);
+        const gptwSet = sortedData.map(r => r.gptw <= 0 ? 0.5 : r.gptw);
         const gapSet = sortedData.map(r => r.gap);
 
         // Chart 1: Comparison + GAP Brackets (Principal)
@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         borderRadius: 8,
                         barPercentage: 0.85,
                         categoryPercentage: 0.7,
-                        datalabels: { align: 'center', color: '#FFF', font: { size: 12, weight: 'bold' } }
+                        datalabels: { anchor: 'center', align: 'center', color: '#FFF', font: { family: 'Outfit', weight: '900', size: 12 } }
                     },
                     {
                         label: 'GPTW',
@@ -289,14 +289,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         borderRadius: 8,
                         barPercentage: 0.85,
                         categoryPercentage: 0.7,
-                        datalabels: { align: 'center', color: '#FFF', font: { size: 12, weight: 'bold' } }
+                        datalabels: { anchor: 'center', align: 'center', color: '#FFF', font: { family: 'Outfit', weight: '900', size: 12 } }
                     }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                layout: { padding: { top: 70, bottom: 40 } },
+                layout: { padding: { top: 70, bottom: 60 } },
                 plugins: {
                     legend: { position: 'top', labels: { usePointStyle: true, font: { family: 'Outfit', weight: '700', size: 13 } } },
                     tooltip: { mode: 'index', intersect: false },
@@ -318,8 +318,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     y: {
                         type: 'logarithmic',
                         display: false,
-                        min: 1,
-                        suggestedMax: Math.max(...lgSet, ...gptwSet) * 10
+                        min: 0.1, // Começa abaixo de 1 para dar "vão" na base
+                        suggestedMax: Math.max(...lgSet, ...gptwSet) * 2
                     }
                 }
             }
@@ -379,7 +379,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             autoSkip: false
                         }
                     },
-                    y: { display: false }
+                    y: {
+                        display: false,
+                        min: -5 // Cria um respiro negativo para a base
+                    }
                 }
             }
         });
@@ -435,7 +438,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 scales: {
                     x: { grid: { display: false }, ticks: { font: { family: 'Outfit', weight: '800', size: 12 } } },
-                    y: { display: false }
+                    y: {
+                        display: false,
+                        min: -100 // Respiro maior para o waterfall
+                    }
                 }
             }
         });
