@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clima+ | Dashboard de Indicadores</title>
+
+    <!-- Google Fonts: Outfit (Extremely Modern) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js Datalabels Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
+    <!-- PapaParse -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-primary-app">
+
+    <!-- Loading Overlay -->
+    <div id="loading" class="loading-overlay">
+        <div class="loader"></div>
+        <p>PROCESSANDO DADOS DE CLIMA...</p>
+    </div>
+
+    <div class="app-layout-horizontal">
+        <!-- New Top Navbar -->
+        <header class="app-navbar">
+            <div class="nav-left">
+                <div class="app-logo">
+                    <i data-lucide="zap" class="logo-pulse"></i>
+                </div>
+                <div class="branding">
+                    <span class="brand-name">Clima<span class="text-secondary">+</span></span>
+                    <span id="last-updated-text" class="last-sync"></span>
+                </div>
+            </div>
+
+            <div class="nav-center">
+                <div class="filter-wrapper">
+                    <i data-lucide="building-2" class="icon-sm"></i>
+                    <select id="diretoria-filter" class="nav-select">
+                        <option value="all">Filtro: Unidade</option>
+                    </select>
+                </div>
+                <div class="filter-wrapper">
+                    <i data-lucide="list-checks" class="icon-sm"></i>
+                    <select id="category-filter" class="nav-select">
+                        <option value="all">Visão: Geral (Tudo)</option>
+                        <option value="3+">Pergunta: > 3 Feedbacks</option>
+                        <option value="3">Pergunta: 3 Feedbacks</option>
+                        <option value="2">Pergunta: 2 Feedbacks</option>
+                        <option value="1">Pergunta: 1 Feedback</option>
+                        <option value="0">Pergunta: Nenhum / N.Resp</option>
+                    </select>
+                </div>
+                <div class="search-wrapper">
+                    <i data-lucide="search" class="icon-sm"></i>
+                    <input type="text" id="tableSearch" placeholder="Pesquisar gerência...">
+                </div>
+            </div>
+
+            <div class="nav-right">
+                <button class="btn-logout" id="logoutBtn">
+                    <i data-lucide="log-out"></i>
+                    Sair
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="main-workspace">
+            <div class="dashboard-grid scrollable-area">
+
+                <!-- KPI Section -->
+                <section class="metrics-row full-section">
+                    <div class="metric-card animate-up">
+                        <span class="metric-label">LG</span>
+                        <h2 class="metric-value counter" id="kpi-lg">0</h2>
+                        <div class="metric-trend">Volume Total</div>
+                    </div>
+
+                    <div class="metric-card accent-green animate-up delay-1">
+                        <span class="metric-label">GPTW</span>
+                        <h2 class="metric-value counter" id="kpi-gptw">0</h2>
+                        <div class="metric-trend">Volume Total</div>
+                    </div>
+
+                    <div class="metric-card accent-orange animate-up delay-2">
+                        <span class="metric-label">GAP Global</span>
+                        <h2 class="metric-value"><span id="kpi-gap" class="counter">0</span>%</h2>
+                        <div class="metric-trend">Divergência de Dados</div>
+                    </div>
+                </section>
+
+                <!-- Presentation Charts (Principal) -->
+                <section class="charts-grid full-section">
+                    <div class="chart-presentation-card animate-up delay-1">
+                        <div class="card-header-actions">
+                            <h3>Comparativo Detalhado: LG vs GPTW por Unidade</h3>
+                            <button class="btn-download"
+                                onclick="downloadChart('comparisonChart', 'Comparativo_LG_GPTW')">
+                                <i data-lucide="download"></i>
+                                Baixar Gráfico
+                            </button>
+                        </div>
+                        <div class="chart-content-full large-chart">
+                            <canvas id="comparisonChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Executive Bridge (Now below Comparison) -->
+                <section class="full-section animate-up delay-2">
+                    <div class="chart-presentation-card bridge-card">
+                        <div class="card-header-actions">
+                            <h3>Ponte de Conversão Global: Logado vs Percebido</h3>
+                            <div class="badge-total">Resumo Gerencial</div>
+                        </div>
+                        <div class="bridge-container">
+                            <canvas id="waterfallChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Additional Charts -->
+                <section class="charts-grid full-section">
+                    <div class="chart-presentation-card animate-up delay-3">
+                        <div class="card-header-actions">
+                            <h3>Ranking de Divergência (GAP %)</h3>
+                            <button class="btn-download" onclick="downloadChart('gapRankingChart', 'Ranking_GAP')">
+                                <i data-lucide="download"></i>
+                                Baixar Gráfico
+                            </button>
+                        </div>
+                        <div class="chart-content-full">
+                            <canvas id="gapRankingChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Data Presentation Table -->
+                <section class="data-presentation animate-up delay-4">
+                    <div class="table-header-custom">
+                        <h3>Detalhamento Geral por Unidade</h3>
+                    </div>
+                    <div class="table-container">
+                        <table class="premium-table">
+                            <thead>
+                                <tr>
+                                    <th width="40%">GERÊNCIA / ÁREA</th>
+                                    <th width="20%" class="text-center">LG</th>
+                                    <th width="20%" class="text-center">GPTW</th>
+                                    <th width="20%" class="text-center">GAP (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Logic -->
+    <script src="app.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>
